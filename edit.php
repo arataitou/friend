@@ -7,19 +7,70 @@
     $dbh = new PDO($dsn,$usr,$password);
     $dbh ->query('SET NAMES utf8');
 
-    $update='UPDATE `friends_list` SET `gender`="'.$_POST['gender'].'",`age`="'.$_POST['age'].'"WHERE id='.$_POST['uid'].';';
+    $update='UPDATE `friends_list` SET `gender`="'.$_POST['gender'].'",`area_table_id`="'.$_POST['area_table_id'].'",`age`="'.$_POST['age'].'"WHERE id='.$_POST['uid'].';';
+    echo $update;
 
     $st = $dbh->prepare($update);
     $st->execute(); 
 
+  
+
     $dsn = null;
+
+var_dump($_POST);
+var_dump($_GET);
+
 
     header('location:friends.php?id='.$_GET['id'].'&return=2'.'&name='.$_POST['name']);
     exit();
  } 
 
-var_dump($_POST);
-var_dump($_GET);
+    if (isset($_GET['uid'])) {
+      $_POST['uid'] = $_GET['uid'];
+    }
+
+    if (isset($_GET['name'])) {
+      $_POST['name'] = $_GET['name'];
+    }
+
+    $dsn = 'mysql:dbname=CampTest;host=localhost';
+    $usr = 'root';
+    $password = 'camp2014';
+    $dbh = new PDO($dsn,$usr,$password);
+    $dbh ->query('SET NAMES utf8');
+
+    $sql_for_friend = 'select * from friends_list where id ='.$_POST['uid'];
+
+
+    $stmt = $dbh->prepare($sql_for_friend);
+    $stmt->execute();
+
+    $rec_for_friend = $stmt->fetch(PDO::FETCH_ASSOC);
+
+
+    $area_id = $rec_for_friend['area_table_id'];
+
+
+
+
+
+    $sql_for_area = 'select * from area_table order by id;';
+
+    $stmt = $dbh->prepare($sql_for_area);
+    $stmt->execute();
+
+    while(1){
+
+      $rec_area = $stmt->fetch(PDO::FETCH_ASSOC);
+
+      if ($rec_area == false){
+        break;
+      }
+
+      $area[] = $rec_area;
+    }
+
+
 
 ?>
 
@@ -32,7 +83,6 @@ var_dump($_GET);
 
 
 
-?>
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -123,14 +173,29 @@ var_dump($_GET);
 
           <input type="text" name ="age" placeholder="年齢"><br/>
           <select name="gender">
-                  <option value="男">男性</option>
-                  <option value="女">女性</option>
+                  <option value="男" <?php if($rec_for_friend['gender']=='男'){echo 'selected';} ?> >男性</option>
+                  <option value="女" <?php if($rec_for_friend['gender']=='女'){echo 'selected';} ?> >女性</option>
                 </select>
           <br/>
+          
+          <select name="area_table_id">
+            <?php 
+              foreach ($area as $area_each) {
+                $selected = '';
+                if ($area_each['id'] == $_GET['id']){
+                  $selected = 'selected';
+                }
+
+                echo '<option value="'.$area_each['id'].'" '.$selected.' >'.$area_each['name'].'</option>';
+              }
+
+            ?>
+          </select><br/>
           <input type="submit" name="edit" value="変更">
           <input type="hidden" name="name" value="<?php echo $_POST['name'] ?>">
           <input type="hidden" name="edit" value="1">
           <input type="hidden" name="uid" value= "<?php echo $_POST['uid'] ?>" >
+
 
 
         </form>

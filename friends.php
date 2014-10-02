@@ -137,7 +137,8 @@ if (isset($_GET['return'])) {
                 echo '<div class="col-xs-3">'.$rec['name'].'…'.$rec['age'].'歳'.'【'.$rec['gender'].'】'.'<form method="POST" action="edit.php?id='.$_GET["id"].'">'.
                 																		'<input type="submit" value="編集">'.
                 																		'<input type="hidden" name="name" value='.$rec['name'].'>'.
-                																		'<input type="hidden" name="uid" value='.$rec['id'].'>'.
+                                                    '<input type="hidden" name="uid" value='.$rec['id'].'>'.
+                                                    '<input type="hidden" name="ken" value='.$rec['area_table_id'].'>'.                                                    
 																									'</form></div>';
 
        				}

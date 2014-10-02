@@ -1,3 +1,60 @@
+  <?php
+      $dsn = 'mysql:dbname=CampTest;host=localhost';
+      $usr = 'root';
+      $password = 'camp2014';
+      $dbh = new PDO($dsn,$usr,$password);
+      $dbh ->query('SET NAMES utf8');
+
+      if (isset($_POST['kensaku'])) {
+        
+      $kensaku ='select * from friends_list where name LIKE "%'.$_POST['kensaku'].'%"';
+
+      $st = $dbh->prepare($kensaku);
+      $st ->execute();
+      }
+
+      $sql ='select * from area_table order by id;';
+
+      $stmt = $dbh->prepare($sql);
+      $stmt ->execute();
+
+ 
+
+
+      if(isset($kensaku)){
+       // $count_people = 0;
+        $count ='select COUNT(*)from friends_list where name LIKE "%'.$_POST['kensaku'].'%"';
+        $stmt_count = $dbh->prepare($count);
+        $stmt_count ->execute();
+        $count = $stmt_count->fetch(PDO::FETCH_ASSOC);
+
+
+          if($count['COUNT(*)']  > 2){
+                      echo '</br>'.$count['COUNT(*)'] .'件表示しました。</br>';
+                }elseif ($count['COUNT(*)']  == 0) {
+                      echo '</br>該当はありません。';
+                }
+            while(1){
+              $kensaku = $st->fetch(PDO::FETCH_ASSOC);
+              if ($count['COUNT(*)'] == 1){
+                  header('location:edit.php?id='.$kensaku['area_table_id'].'&uid='.$kensaku['id'].'&name='.$kensaku['name']);
+                  exit(); 
+                  }
+
+
+              if ($kensaku == false) {
+                        //データの終わりにカーソルが移動した時無限ループを抜ける
+
+                        break;
+                  }
+              echo '<a href="edit.php?id='.$kensaku['area_table_id'].'&uid='.$kensaku['id'].'&name='.$kensaku['name'].'">'.$kensaku['name'].'</a></br>';
+              // $count_people += 1;
+          }      
+      }
+
+
+  ?>
+
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -20,6 +77,7 @@
     <link href="dist/css/custom.css" rel="stylesheet">
 
 
+
     <!-- HTML5 shim, for IE6-8 support of HTML5 elements. All other JS at the end of file. -->
     <!--[if lt IE 9]>
       <script src="dist/js/vendor/html5shiv.js"></script>
@@ -34,7 +92,7 @@
               <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar-collapse-01">
                 <span class="sr-only">Toggle navigation</span>
               </button>
-              <a class="navbar-brand" href="#">ArataIto</a>
+              <a class="navbar-brand" href="http://192.168.33.10/friend/">ArataIto</a>
             </div>
             <div class="collapse navbar-collapse" id="navbar-collapse-01">
               <ul class="nav navbar-nav navbar-left">
@@ -57,7 +115,23 @@
         </div>
 
       <div class="col-xs-3">
-        <div class="tile">
+          <?php
+            echo '<ul ="list-group">';
+
+              for($i=1;$i<48;$i++){
+                  $rec = $stmt->fetch(PDO::FETCH_ASSOC);
+                  $num ='SELECT COUNT(name) from friends_list where `area_table_id`='.$i.';';
+                  $st = $dbh->prepare($num);
+                  $st ->execute();
+                  $cord = $st->fetch(PDO::FETCH_ASSOC);
+                  echo '<li class="list-group-item"><a href= "friends.php?id='.$rec['id'].'">'.$rec['name'].'('.$cord['COUNT(name)'].')</a></li>';
+                }
+
+              // $sql='select count(*) as 'count' from friend_table where area_table_id = .$rec['id'].'  ;
+              
+
+            echo '</ul>';
+          ?>
           <h5>todo</h5>
           <form method="post" action="check.php">
             <input name="nickname" type="text"  class="form-control">
@@ -66,40 +140,20 @@
             <input type="submit" value="send" class="btn btn-block btn-lg btn-primary">
           </form>
         </div>
-      </div>
-
       <div class="col-xs-9">
         <div class="tile">
           <h2>index.php</h2>
         </div>
         <div class="tile">
-	<?php
-		  $dsn = 'mysql:dbname=CampTest;host=localhost';
-      $usr = 'root';
-      $password = 'camp2014';
-      $dbh = new PDO($dsn,$usr,$password);
-      $dbh ->query('SET NAMES utf8');
 
-      $sql ='select * from area_table order by id;';
+      <form method="POST" action="index.php">
+        <p><input type="text" name="kensaku" placeholder="名前検索"></p>
+        <p><input type="submit" value="検索"></p>
+      </form>
 
-     	$stmt = $dbh->prepare($sql);
-    	$stmt ->execute();
 
-    	echo '<ul>';
+  <?php
 
-         			for($i=1;$i<48;$i++){
-   				        $rec = $stmt->fetch(PDO::FETCH_ASSOC);
-	                $num ='SELECT COUNT(name) from friends_list where `area_table_id`='.$i.';';
-	                $st = $dbh->prepare($num);
-	  							$st ->execute();
-	  							$cord = $st->fetch(PDO::FETCH_ASSOC);
-	                echo '<li><a href= "friends.php?id='.$rec['id'].'">'.$rec['name'].'('.$cord['COUNT(name)'].')</a></li>';
-	              }
-
-			// $sql='select count(*) as 'count' from friend_table where area_table_id = .$rec['id'].'  ;
-       				
-
-      echo '</ul>';
 
 
     $dbh =null;
